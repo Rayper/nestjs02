@@ -1,64 +1,83 @@
 import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { InjectRepository } from "@nestjs/typeorm";
+import { Like, MoreThan, Repository } from "typeorm";
 import { CreateEventDto } from "./create-event.dto";
 import { Event } from "./event.entity";
 import { UpdateEventDto } from "./update-event.dto";
 
 @Controller('/events')
 export class EventsController {
-    private events: Event[] = [];
+    constructor(
+        @InjectRepository(Event)
+        private readonly repository: Repository<Event>
+    ) {
+
+    }
 
     @Get()
     findAll() {
-        return this.events;
+        return this.repository.find();
+    }
+
+    @Get('/practice')
+    async practice() {
+        // sama aja kayak select * from event where id = 3
+        return this.repository.find({
+            // cuma ambil fields id sama when
+            // select: ['id', 'when'],
+            // where: {id: 3}
+            // where: {id: MoreThan(3)}
+            where: [{
+                id: MoreThan(1),
+                when: MoreThan(new Date('2021-02-12T13:00:00'))
+            }, {
+                // description LIKE %meet%
+                description: Like('%meet%')
+            }],
+            // Limit = 2
+            take: 2,
+            // order by id DESC 
+            order: {
+                id: 'DESC'
+            }
+        });
     }
 
     @Get(':id')
     // kalau ga dipassing namanya akan membentuk sebuah object
-    findOne(@Param('id') id) {
-        const event = this.events.find(
-            event => event.id === parseInt(id)
-        );
-        
-        return event;
+    async findOne(@Param('id') id) {
+        return await this.repository.findOne(id);
     }
 
     @Post()
-    create(@Body() input: CreateEventDto) {
-        const event = {
+    async create(@Body() input: CreateEventDto) {
+        return await this.repository.save({
             ...input,
             when: new Date(input.when),
-            // dapetin next available id
-            id: this.events.length + 1
-        };
-        this.events.push(event);
-        return event;
+        });
     }
 
     @Patch(':id')
-    update(@Param('id') id, @Body() input: UpdateEventDto) {
-        const index = this.events.findIndex(
-            event => event.id === parseInt(id)
-        );
+    async update(@Param('id') id, @Body() input: UpdateEventDto) {
+        const event = await this.repository.findOne(id);
 
-        this.events[index] = {
+        return await this.repository.save({
             // copy semua property dari index yang didapet
-            ...this.events[index],
+            ...event,
             // ambil property yang diupdate, karena optional
             ...input,
             // cek apakah input provided, jika iya crete new Date object
-            when: input.when ? new Date(input.when) : this.events[index].when
-        }
+            when: input.when ? new Date(input.when) : event.when
+        });
 
-        return this.events[index];
     }
 
     @Delete(':id')
     // set http code
     @HttpCode(204)
-    remove(@Param('id') id) {
+    async remove(@Param('id') id) {
         // remove 1 single element
-        this.events = this.events.filter(
-            event => event.id !== parseInt(id)
-        );
+        const event = await this.repository.findOne(id);
+        await this.repository.remove(event);
     }
 }
