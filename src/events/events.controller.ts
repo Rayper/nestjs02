@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { CreateEventDto } from "./create-event.dto";
@@ -7,6 +7,8 @@ import { UpdateEventDto } from "./update-event.dto";
 
 @Controller('/events')
 export class EventsController {
+    private readonly logger = new Logger(EventsController.name);
+
     constructor(
         @InjectRepository(Event)
         private readonly repository: Repository<Event>
@@ -15,7 +17,11 @@ export class EventsController {
     }
 
     @Get()
-    findAll() {
+    async findAll() {
+        // this.logger.log(`Hit the findAll routes`);
+        // const events = await this.repository.find();
+        // this.logger.debug(`Found ${events.length} events`);
+        // return events;
         return this.repository.find();
     }
 
@@ -48,7 +54,13 @@ export class EventsController {
     // ParseIntPipe akan ubah id menjadi int/number
     async findOne(@Param('id') id) {
         // console.log("id : ", typeof id);
-        return await this.repository.findOne(id);
+        const event = await this.repository.findOne(id);
+
+        if(!event) {
+            throw new NotFoundException();
+        }
+
+        return event;
     }
 
     @Post()
@@ -66,6 +78,10 @@ export class EventsController {
         @Body() input: UpdateEventDto) {
         const event = await this.repository.findOne(id);
 
+        if(!event) {
+            throw new NotFoundException();
+        }
+
         return await this.repository.save({
             // copy semua property dari index yang didapet
             ...event,
@@ -82,6 +98,11 @@ export class EventsController {
     async remove(@Param('id') id) {
         // remove 1 single element
         const event = await this.repository.findOne(id);
+        
+        if(!event) {
+            throw new NotFoundException();
+        }
+
         await this.repository.remove(event);
     }
 }
