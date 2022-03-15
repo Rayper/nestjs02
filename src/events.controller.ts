@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Param, ParseIntPipe, Patch, Post, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { CreateEventDto } from "./create-event.dto";
@@ -45,11 +45,14 @@ export class EventsController {
 
     @Get(':id')
     // kalau ga dipassing namanya akan membentuk sebuah object
+    // ParseIntPipe akan ubah id menjadi int/number
     async findOne(@Param('id') id) {
+        // console.log("id : ", typeof id);
         return await this.repository.findOne(id);
     }
 
     @Post()
+    // buat validaiton groups nya disini
     async create(@Body() input: CreateEventDto) {
         return await this.repository.save({
             ...input,
@@ -58,7 +61,9 @@ export class EventsController {
     }
 
     @Patch(':id')
-    async update(@Param('id') id, @Body() input: UpdateEventDto) {
+    async update(
+        @Param('id') id,
+        @Body() input: UpdateEventDto) {
         const event = await this.repository.findOne(id);
 
         return await this.repository.save({
@@ -69,7 +74,6 @@ export class EventsController {
             // cek apakah input provided, jika iya crete new Date object
             when: input.when ? new Date(input.when) : event.when
         });
-
     }
 
     @Delete(':id')
