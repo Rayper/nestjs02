@@ -4,6 +4,7 @@ import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
 import { CreateEventDto } from "./create-event.dto";
 import { Event } from "./event.entity";
+import { EventService } from "./event.service";
 import { UpdateEventDto } from "./update-event.dto";
 
 @Controller('/events')
@@ -14,7 +15,8 @@ export class EventsController {
         @InjectRepository(Event)
         private readonly repository: Repository<Event>,
         @InjectRepository(Attendee)
-        private readonly attendeerepository: Repository<Attendee>
+        private readonly attendeeRepository: Repository<Attendee>,
+        private readonly eventService: EventService
     ) {
 
     }
@@ -79,7 +81,8 @@ export class EventsController {
     // ParseIntPipe akan ubah id menjadi int/number
     async findOne(@Param('id') id) {
         // console.log("id : ", typeof id);
-        const event = await this.repository.findOne(id);
+        // const event = await this.repository.findOne(id);
+        const event = await this.eventService.getEvent(id);
 
         if(!event) {
             throw new NotFoundException();
