@@ -3,10 +3,23 @@ import { TypeOrmModule } from "@nestjs/typeorm";
 import { LocalStrategy } from "./local.strategy";
 import { User } from "./user.entity";
 import { AuthController } from './auth.controller';
+import { JwtModule } from "@nestjs/jwt";
+import { AuthService } from './auth.service';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([User])],
-    providers: [LocalStrategy],
+    imports: [
+        TypeOrmModule.forFeature([User]),
+        // pakai registerAsync supaya tidak error untuk AUTH_SECRET-nya
+        JwtModule.registerAsync({
+            useFactory: () => ({
+                secret: process.env.AUTH_SECRET,
+                signOptions: {
+                    expiresIn: '60m'
+                }
+            })
+        })
+    ],
+    providers: [LocalStrategy, AuthService],
     controllers: [AuthController]
 })
 export class AuthModule {}
