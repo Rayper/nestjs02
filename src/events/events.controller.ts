@@ -1,11 +1,12 @@
-import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
-import { CreateEventDto } from "./create-event.dto";
+import { CreateEventDto } from "./input/create-event.dto";
 import { Event } from "./event.entity";
 import { EventService } from "./event.service";
-import { UpdateEventDto } from "./update-event.dto";
+import { UpdateEventDto } from "./input/update-event.dto";
+import { ListEvents } from "./input/list.event";
 
 @Controller('/events')
 export class EventsController {
@@ -22,12 +23,19 @@ export class EventsController {
     }
 
     @Get()
-    async findAll() {
-        // this.logger.log(`Hit the findAll routes`);
-        // const events = await this.repository.find();
-        // this.logger.debug(`Found ${events.length} events`);
-        // return events;
-        return this.repository.find();
+    async findAll(@Query() filter: ListEvents) {
+        this.logger.debug(filter);
+        this.logger.log(`Hit the findAll routes`);
+        const events = await this.eventService.getEventsWithAttendeeCountFiltered(filter);
+        // pas nyoba 
+        // when=1 all
+        // when=2 Today,
+        // when=3 Tommorow,
+        // when=4 ThisWeek,
+        // when=5 NextWeek
+        this.logger.debug(`Found ${events.length} events`);
+        return events;
+        // return this.repository.find();
     }
 
     @Get('/practice')
