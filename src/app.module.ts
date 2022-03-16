@@ -11,6 +11,7 @@ import ormConfigProd from './config/orm.config.prod';
 import { Event } from './events/event.entity';
 import { EventsModule } from './events/events.module';
 import { SchoolModule } from './school/school.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -38,7 +39,8 @@ import { SchoolModule } from './school/school.module';
     // }),
     TypeOrmModule.forFeature([Event, Attendee]),
     EventsModule,
-    SchoolModule
+    SchoolModule,
+    AuthModule
 ],
   controllers: [AppController],
   providers: [{
