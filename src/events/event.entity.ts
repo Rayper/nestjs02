@@ -26,6 +26,8 @@ export class Event {
     // @OneToMany(() => Attendee, (attendee) => attendee.event, {
     //     eager: true
     // })
-    @OneToMany(() => Attendee, (attendee) => attendee.event)
+    @OneToMany(() => Attendee, (attendee) => attendee.event, {
+        cascade: true
+    })
     attendees: Attendee[];
 }
