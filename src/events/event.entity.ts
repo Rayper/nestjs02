@@ -1,5 +1,6 @@
 import { cp } from "fs";
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Attendee } from "src/attendee.entity";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 // @Entity('event', {name: 'event'})
 @Entity()
@@ -19,4 +20,8 @@ export class Event {
     
     @Column()
     address: string;
+
+    // related property yang mengarah ke attendee
+    @OneToMany(() => Attendee, (attendee) => attendee.event)
+    attendees: Attendee[];
 }
