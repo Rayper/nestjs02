@@ -24,7 +24,7 @@ export class LocalStrategy extends PassportStrategy(Strategy) {
         // klo user not found
         if(!user) {
             this.logger.debug(`User ${username} not found!`);
-            throw new NotFoundException();
+            throw new UnauthorizedException();
         }
 
         if(password !== user.password) {
