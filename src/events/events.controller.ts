@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, UsePipes, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
@@ -23,17 +23,25 @@ export class EventsController {
     }
 
     @Get()
+    // untuk ngatasin error karena offset bukan sebuah number
+    @UsePipes(new ValidationPipe( {transform: true} ))
     async findAll(@Query() filter: ListEvents) {
         this.logger.debug(filter);
         this.logger.log(`Hit the findAll routes`);
-        const events = await this.eventService.getEventsWithAttendeeCountFiltered(filter);
+        const events = await this.eventService.getEventWithAttendeeCountFilteredPaginated(
+                filter,
+                {
+                    total: true,
+                    currentPage: filter.page,
+                    limit: 2
+                }
+            );
         // pas nyoba 
         // when=1 all
         // when=2 Today,
         // when=3 Tommorow,
         // when=4 ThisWeek,
         // when=5 NextWeek
-        this.logger.debug(`Found ${events.length} events`);
         return events;
         // return this.repository.find();
     }
