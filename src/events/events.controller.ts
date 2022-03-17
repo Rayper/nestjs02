@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
@@ -7,6 +7,9 @@ import { Event } from "./event.entity";
 import { EventService } from "./event.service";
 import { UpdateEventDto } from "./input/update-event.dto";
 import { ListEvents } from "./input/list.event";
+import { CurrentUser } from "src/auth/current-user.decorator";
+import { User } from "src/auth/user.entity";
+import { AuthGuardJwt } from "src/auth/auth-guard.jwt";
 
 @Controller('/events')
 export class EventsController {
@@ -108,12 +111,14 @@ export class EventsController {
     }
 
     @Post()
-    // buat validaiton groups nya disini
-    async create(@Body() input: CreateEventDto) {
-        return await this.repository.save({
-            ...input,
-            when: new Date(input.when),
-        });
+    // buat validation groups nya disini
+    // hanya user yang terauthenticated yang dapat membuat sebuah event
+    @UseGuards(AuthGuardJwt)
+    async create(
+        @Body() input: CreateEventDto,
+        @CurrentUser() user: User
+        ) {
+        return await this.eventService.createEvent(input, user);
     }
 
     @Patch(':id')

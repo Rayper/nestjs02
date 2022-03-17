@@ -1,10 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { query } from "express";
+import { User } from "src/auth/user.entity";
 import { paginate, PaginationOptions } from "src/pagination/paginator";
 import { DeleteResult, Repository } from "typeorm";
 import { AttendeeAnswerEnum } from "./attendee.entity";
 import { Event } from "./event.entity";
+import { CreateEventDto } from "./input/create-event.dto";
 import { ListEvents, WhenEventFilter } from "./input/list.event";
 
 
@@ -117,6 +119,16 @@ export class EventService {
         .delete()
         .where('id = :id', { id })
         .execute();
+    }
+
+    public async createEvent(input: CreateEventDto, user: User): Promise<Event> {
+      return await this.eventRepository.save({
+        // ambil data dari event create dto
+        ...input,
+        // ambil data dari user
+        organizer: user,
+        when: new Date(input.when)
+      });
     }
 }
 

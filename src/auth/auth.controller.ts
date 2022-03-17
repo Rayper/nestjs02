@@ -1,5 +1,7 @@
 import { Controller, Get, Post, Req, Request, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
+import { AuthGuardJwt } from './auth-guard.jwt';
+import { AuthGuardLocal } from './auth-guard.local';
 import { AuthService } from './auth.service';
 import { CurrentUser } from './current-user.decorator';
 import { User } from './user.entity';
@@ -12,7 +14,7 @@ export class AuthController {
 
     @Post('login')
     // local adalah nama dari strategy yang telah dibuat
-    @UseGuards(AuthGuard('local'))
+    @UseGuards(AuthGuardLocal)
     async login(@CurrentUser() user: User) {
         return {
             userId: user.id,
@@ -22,7 +24,7 @@ export class AuthController {
 
     @Get('profile')
     // jwt adalah nama dari strategy yang telah dibuat
-    @UseGuards(AuthGuard('jwt'))
+    @UseGuards(AuthGuardJwt)
     async getProfile(@CurrentUser() user: User) {
         return user;
     }
