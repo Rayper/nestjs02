@@ -15,7 +15,7 @@ export class EventsOrganizedByUserController {
         @Param('userId') userId: number,
         @Query('page') page = 1
     ) {
-        return await this.eventService.getEventsOrganizedByUserIdPaginated(
+        return await this.eventService.getEventsAttendedByUserIdPaginated(
             userId,
             { currentPage: page, limit: 3 }
         );

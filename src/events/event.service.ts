@@ -143,20 +143,21 @@ export class EventService {
       });
     }
 
-    public async getEventsOrganizedByUserIdPaginated(
+    public async getEventsAttendedByUserIdPaginated(
         userId: number, paginateOptions: PaginationOptions
     ): Promise<PaginatedEvents> {
       return await paginate<Event>(
-        this.getEventsOrganizedByUserIdQuery(userId),
+        this.getEventsAttendedByUserIdQuery(userId),
         paginateOptions
       );
     }
 
-    private getEventsOrganizedByUserIdQuery(
+    private getEventsAttendedByUserIdQuery(
       userId: number
     ) {
       return this.getEventBaseQuery()
-        .where(`e.organizerId = :userId`, { userId });
+      .leftJoinAndSelect('e.attendees', 'a')
+      .where('a.userId = :userId', { userId });
     }
 }
 
