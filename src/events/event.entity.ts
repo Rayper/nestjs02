@@ -7,6 +7,9 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 // @Entity('event', {name: 'event'})
 @Entity()
 export class Event {
+    constructor(partial?: Partial<Event>) {
+        Object.assign(this, partial);
+      }
 
     @PrimaryGeneratedColumn()
     @Expose()
