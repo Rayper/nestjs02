@@ -20,7 +20,8 @@ export class Attendee {
     // name: string;
 
     @ManyToOne(() => Event, (event) => event.attendees, {
-        nullable: false
+        nullable: false,
+        onDelete: 'CASCADE'
     })
     // custom nama kolom untuk join
     // @JoinColumn({
