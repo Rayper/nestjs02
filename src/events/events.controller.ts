@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, Request, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, ClassSerializerInterceptor, Controller, Delete, ForbiddenException, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, Request, SerializeOptions, UseGuards, UseInterceptors, UsePipes, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
@@ -12,6 +12,8 @@ import { User } from "src/auth/user.entity";
 import { AuthGuardJwt } from "src/auth/auth-guard.jwt";
 
 @Controller('/events')
+// test serialization
+@SerializeOptions({strategy: 'excludeAll'})
 export class EventsController {
     private readonly logger = new Logger(EventsController.name);
 
@@ -28,6 +30,7 @@ export class EventsController {
     @Get()
     // untuk ngatasin error karena offset bukan sebuah number
     @UsePipes(new ValidationPipe( {transform: true} ))
+    @UseInterceptors(ClassSerializerInterceptor)
     async findAll(@Query() filter: ListEvents) {
         this.logger.debug(filter);
         this.logger.log(`Hit the findAll routes`);
@@ -95,7 +98,9 @@ export class EventsController {
         return event;
     }
 
+
     @Get(':id')
+    @UseInterceptors(ClassSerializerInterceptor)
     // kalau ga dipassing namanya akan membentuk sebuah object
     // ParseIntPipe akan ubah id menjadi int/number
     async findOne(@Param('id') id) {
@@ -114,6 +119,7 @@ export class EventsController {
     // buat validation groups nya disini
     // hanya user yang terauthenticated yang dapat membuat sebuah event
     @UseGuards(AuthGuardJwt)
+    @UseInterceptors(ClassSerializerInterceptor)
     async create(
         @Body() input: CreateEventDto,
         @CurrentUser() user: User
@@ -123,6 +129,7 @@ export class EventsController {
 
     @Patch(':id')
     @UseGuards(AuthGuardJwt)
+    @UseInterceptors(ClassSerializerInterceptor)
     async update(
         @Param('id') id,
         @Body() input: UpdateEventDto,
@@ -148,6 +155,7 @@ export class EventsController {
     // set http code
     @HttpCode(204)
     @UseGuards(AuthGuardJwt)
+    @UseInterceptors(ClassSerializerInterceptor)
     async remove(
         @Param('id') id,
         @CurrentUser() user: User
