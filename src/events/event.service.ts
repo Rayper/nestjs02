@@ -8,6 +8,7 @@ import { AttendeeAnswerEnum } from "./attendee.entity";
 import { Event } from "./event.entity";
 import { CreateEventDto } from "./input/create-event.dto";
 import { ListEvents, WhenEventFilter } from "./input/list.event";
+import { UpdateEventDto } from "./input/update-event.dto";
 
 
 @Injectable()
@@ -129,6 +130,17 @@ export class EventService {
         organizer: user,
         when: new Date(input.when)
       });
+    }
+
+    public async updateEvent(event: Event,input: UpdateEventDto): Promise<Event> {
+      return await this.eventRepository.save({
+        // copy semua property dari index yang didapet
+        ...event,
+        // ambil property yang diupdate, karena optional
+        ...input,
+        // cek apakah input provided, jika iya crete new Date object
+        when: input.when ? new Date(input.when) : event.when
+    });
     }
 }
 

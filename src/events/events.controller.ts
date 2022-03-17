@@ -1,4 +1,4 @@
-import { Body, Controller, Delete, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
+import { Body, Controller, Delete, ForbiddenException, Get, HttpCode, Logger, NotFoundException, Param, ParseIntPipe, Patch, Post, Query, Request, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Like, MoreThan, Repository } from "typeorm";
 import { Attendee } from "./attendee.entity";
@@ -122,29 +122,36 @@ export class EventsController {
     }
 
     @Patch(':id')
+    @UseGuards(AuthGuardJwt)
     async update(
         @Param('id') id,
-        @Body() input: UpdateEventDto) {
-        const event = await this.repository.findOne(id);
+        @Body() input: UpdateEventDto,
+        @CurrentUser() user: User
+        ) {
+        // const event = await this.repository.findOne(id);
+        const event = await this.eventService.getEvent(id);
 
         if(!event) {
             throw new NotFoundException();
         }
 
-        return await this.repository.save({
-            // copy semua property dari index yang didapet
-            ...event,
-            // ambil property yang diupdate, karena optional
-            ...input,
-            // cek apakah input provided, jika iya crete new Date object
-            when: input.when ? new Date(input.when) : event.when
-        });
+        // cek apakah user id sama dengan organizerId   
+        if (event.organizerId !== user.id) {
+            throw new ForbiddenException(
+              null, `You are not authorized to change this event`);
+          }
+      
+          return await this.eventService.updateEvent(event, input);
     }
 
     @Delete(':id')
     // set http code
     @HttpCode(204)
-    async remove(@Param('id') id) {
+    @UseGuards(AuthGuardJwt)
+    async remove(
+        @Param('id') id,
+        @CurrentUser() user: User
+        ) {
         // remove 1 single element
         // const event = await this.repository.findOne(id);
         
@@ -153,12 +160,24 @@ export class EventsController {
         // }
 
         // await this.repository.remove(event);
-        const result = await this.eventService.deleteEvent(id);
 
-        // kalo datanya gaditemuin
-        if(result.affected !== 1) {
+        const event = await this.eventService.getEvent(id);
+
+        if(!event) {
             throw new NotFoundException();
         }
+
+        // cek apakah user id sama dengan organizerId   
+        if (event.organizerId !== user.id) {
+            throw new ForbiddenException(null, `You are not authorized to remove this event`);
+        }
+
+        await this.eventService.deleteEvent(id);
+
+        // kalo datanya gaditemuin
+        // if(result.affected !== 1) {
+        //     throw new NotFoundException();
+        // }
     }
     
 }
