@@ -86,7 +86,7 @@ export class EventsController {
 
         const attendee = new Attendee();
 
-        attendee.name = 'Cascade Test';
+        // attendee.name = 'Cascade Test';
         // attendee.event = event;
 
         event.attendees.push(attendee);
@@ -103,10 +103,10 @@ export class EventsController {
     @UseInterceptors(ClassSerializerInterceptor)
     // kalau ga dipassing namanya akan membentuk sebuah object
     // ParseIntPipe akan ubah id menjadi int/number
-    async findOne(@Param('id') id) {
+    async findOne(@Param('id', ParseIntPipe) id) {
         // console.log("id : ", typeof id);
         // const event = await this.repository.findOne(id);
-        const event = await this.eventService.getEvent(id);
+        const event = await this.eventService.getEventWithAttendeeCount(id);
 
         if(!event) {
             throw new NotFoundException();
@@ -131,12 +131,13 @@ export class EventsController {
     @UseGuards(AuthGuardJwt)
     @UseInterceptors(ClassSerializerInterceptor)
     async update(
-        @Param('id') id,
+        @Param('id', ParseIntPipe) id,
         @Body() input: UpdateEventDto,
         @CurrentUser() user: User
         ) {
         // const event = await this.repository.findOne(id);
-        const event = await this.eventService.getEvent(id);
+        // const event = await this.eventService.getEventAttendeeCount(id);
+        const event = await this.eventService.findOne(id);
 
         if(!event) {
             throw new NotFoundException();
@@ -157,7 +158,7 @@ export class EventsController {
     @UseGuards(AuthGuardJwt)
     @UseInterceptors(ClassSerializerInterceptor)
     async remove(
-        @Param('id') id,
+        @Param('id', ParseIntPipe) id,
         @CurrentUser() user: User
         ) {
         // remove 1 single element
@@ -169,7 +170,8 @@ export class EventsController {
 
         // await this.repository.remove(event);
 
-        const event = await this.eventService.getEvent(id);
+        // const event = await this.eventService.getEventAttendeeCount(id);
+        const event = await this.eventService.findOne(id);
 
         if(!event) {
             throw new NotFoundException();
