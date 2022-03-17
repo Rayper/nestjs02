@@ -9,6 +9,7 @@ export class AppService {
   }
 
   getHello(): string {
-    return `Hello World! from ${this.name}`;
+    // return `Hello World! from ${this.name}`;
+    return 'Hello World!';
   }
 }
