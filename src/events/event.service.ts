@@ -5,7 +5,7 @@ import { User } from "src/auth/user.entity";
 import { paginate, PaginationOptions } from "src/pagination/paginator";
 import { DeleteResult, Repository } from "typeorm";
 import { AttendeeAnswerEnum } from "./attendee.entity";
-import { Event } from "./event.entity";
+import { Event, PaginatedEvents } from "./event.entity";
 import { CreateEventDto } from "./input/create-event.dto";
 import { ListEvents, WhenEventFilter } from "./input/list.event";
 import { UpdateEventDto } from "./input/update-event.dto";
@@ -107,7 +107,7 @@ export class EventService {
       public async getEventWithAttendeeCountFilteredPaginated(
         filter: ListEvents,
         paginateOptions: PaginationOptions
-      ) {
+      ): Promise<PaginatedEvents> {
           return await paginate(
             await this.getEventsWithAttendeeCountFiltered(filter),
             paginateOptions
@@ -133,14 +133,30 @@ export class EventService {
     }
 
     public async updateEvent(event: Event,input: UpdateEventDto): Promise<Event> {
-      return await this.eventRepository.save({
-        // copy semua property dari index yang didapet
-        ...event,
-        // ambil property yang diupdate, karena optional
-        ...input,
-        // cek apakah input provided, jika iya crete new Date object
-        when: input.when ? new Date(input.when) : event.when
-    });
+        return await this.eventRepository.save({
+          // copy semua property dari index yang didapet
+          ...event,
+          // ambil property yang diupdate, karena optional
+          ...input,
+          // cek apakah input provided, jika iya crete new Date object
+          when: input.when ? new Date(input.when) : event.when
+      });
+    }
+
+    public async getEventsOrganizedByUserIdPaginated(
+        userId: number, paginateOptions: PaginationOptions
+    ): Promise<PaginatedEvents> {
+      return await paginate<Event>(
+        this.getEventsOrganizedByUserIdQuery(userId),
+        paginateOptions
+      );
+    }
+
+    private getEventsOrganizedByUserIdQuery(
+      userId: number
+    ) {
+      return this.getEventBaseQuery()
+        .where(`e.organizerId = :userId`, { userId });
     }
 }
 
