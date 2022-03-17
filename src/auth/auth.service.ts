@@ -16,7 +16,7 @@ export class AuthService {
         })
     }
 
-    public async hashPassword(password: string): Promise<String> {
+    public async hashPassword(password: string): Promise<string> {
         // 10 nya adalah ukuran tingkat security hash nya
         return await bcrypt.hash(password, 10);
     }

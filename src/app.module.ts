@@ -12,6 +12,7 @@ import { Event } from './events/event.entity';
 import { EventsModule } from './events/events.module';
 import { SchoolModule } from './school/school.module';
 import { AuthModule } from './auth/auth.module';
+import { UsersController } from './auth/users.controller';
 
 @Module({
   imports: [
