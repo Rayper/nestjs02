@@ -1,4 +1,5 @@
-import { Column, Entity, JoinColumn, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Event } from "src/events/event.entity";
+import { Column, Entity, JoinColumn, OneToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { Profile } from "./profile.entity";
 
 @Entity()
@@ -24,4 +25,8 @@ export class User {
     @OneToOne(() => Profile)
     @JoinColumn()
     profile: Profile;
+
+    // hanya sebagai virtual property tidak dijadikan column
+    @OneToMany(() => Event, (event) => event.organizer)
+    organized: Event[];
 }
