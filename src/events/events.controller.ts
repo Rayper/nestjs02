@@ -189,5 +189,4 @@ export class EventsController {
         //     throw new NotFoundException();
         // }
     }
-    
 }
